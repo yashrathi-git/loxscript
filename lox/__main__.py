@@ -5,12 +5,15 @@ from pprint import pprint
 from lox.lexer.scanner import Scanner
 from lox.parser.parser import Parser
 from .handle_errors import has_any_error, update_error
+from .interpreter.interpreter import Interpreter
 
 
 def run(source):
     token_list = Scanner(source=source).get_tokens()
-    parser = Parser(token_list)
-    pprint(parser.parse())
+    expr = Parser(token_list).parse()
+    if not has_any_error():
+        interpreter = Interpreter()
+        interpreter.interpret(expr)
 
 
 def run_repl():

@@ -1,5 +1,6 @@
 import operator
 
+from ..handle_errors import runtime_error
 from ..lexer.token import Token
 from ..parser import expr as e
 from ..lexer.token_type import TokenType as tt
@@ -24,11 +25,11 @@ class Interpreter(e.BaseVisitor):
 
     def visit_unary_method(self, unary: e.Unary):
         right = self._evaluate(unary.right)
-        if unary.operator == tt.BANG:
+        if unary.operator.type == tt.BANG:
             return not self._is_truthy(right)
-        if unary.operator == tt.MINUS:
+        if unary.operator.type == tt.MINUS:
             self._check_number_operands(unary.operator, right)
-            return ~right
+            return ~int(right)
 
         # Unreachable
         return None
@@ -55,16 +56,16 @@ class Interpreter(e.BaseVisitor):
         if op.lexeme in operator_map.keys():
             self._check_number_operands(op, left, right)
             return operator_map[op.lexeme](float(left), float(right))
-        elif op == tt.PLUS:
+        elif op.type == tt.PLUS:
             # Because `+` could also be called on strings
             if isinstance(left, float) and isinstance(right, float):
                 return left + right
             elif isinstance(left, str) and isinstance(right, str):
                 return left + right
             raise RuntimeException(op, "Operand must be number or strings")
-        if op == tt.EQUAL_EQUAL:
+        if op.type == tt.EQUAL_EQUAL:
             return self._is_equal(left, right)
-        if op == tt.BANG_EQUAL:
+        if op.type == tt.BANG_EQUAL:
             return not self._is_equal(left, right)
 
     @staticmethod
@@ -76,3 +77,23 @@ class Interpreter(e.BaseVisitor):
     @staticmethod
     def _is_equal(a, b):
         return a == b
+
+    @staticmethod
+    def _stringify(obj: t.Any):
+        if obj is None:
+            return "nil"
+        if isinstance(obj, float):
+            text = str(obj)
+            if text.endswith(".0"):
+                text = text[:-2]
+            return text
+        if isinstance(obj, bool):
+            return str(obj).lower()
+        return str(obj)
+
+    def interpret(self, expression: e.Expr):
+        try:
+            value = self._evaluate(expression)
+            print(self._stringify(value))
+        except RuntimeException as err:
+            runtime_error(err)
