@@ -1,0 +1,78 @@
+from ..lexer.token import Token
+import typing as t
+from abc import ABC, abstractmethod
+
+
+class BaseVisitor(ABC):
+    @abstractmethod
+    def visit_binary(self, binary: "Binary"):
+        pass
+
+    @abstractmethod
+    def visit_grouping(self, grouping: "Grouping"):
+        pass
+
+    @abstractmethod
+    def visit_unary_method(self, unary: "Unary"):
+        pass
+
+    @abstractmethod
+    def visit_literal_expr(self, literal: "Literal"):
+        pass
+
+
+class Expr(ABC):
+    """
+    Class for expressions
+    """
+
+    @abstractmethod
+    def accept(self, visitor: BaseVisitor) -> t.Any:
+        pass
+
+
+class Binary(Expr):
+    def accept(self, visitor: BaseVisitor) -> t.Any:
+        return visitor.visit_binary(self)
+
+    def __init__(self, left: Expr, operator: Token, right: Expr):
+        self.left = left
+        self.right = right
+        self.operator = operator
+
+    def __repr__(self):
+        return f"({self.left} {self.operator.lexeme} {self.right})"
+
+
+class Grouping(Expr):
+    def accept(self, visitor: BaseVisitor) -> t.Any:
+        return visitor.visit_grouping(self)
+
+    def __init__(self, expression: Expr):
+        self.expression = expression
+
+    def __repr__(self):
+        return f"group({self.expression})"
+
+
+class Literal(Expr):
+    def accept(self, visitor: BaseVisitor) -> t.Any:
+        return visitor.visit_literal_expr(self)
+
+    def __init__(self, value: t.Any):
+        self.value = value
+
+    def __repr__(self):
+        return f"{self.value}"
+
+
+class Unary(Expr):
+    def accept(self, visitor: BaseVisitor) -> t.Any:
+        return visitor.visit_unary_method(self)
+
+    def __init__(self, operator: Token, right: Expr):
+        self.operator = operator
+        self.right = right
+
+    def __repr__(self):
+        return f"({self.operator.lexeme}{self.right})"
