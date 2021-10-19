@@ -121,7 +121,7 @@ class Scanner:
         elif char == ">":
             add(tt.GREATER_EQUAL if self._match("=") else tt.GREATER)
         elif char == "!":
-            add(tt.BANG_EQUAL if self._match("=") else tt.EQUAL)
+            add(tt.BANG_EQUAL if self._match("=") else tt.BANG)
         elif char == "<":
             add(tt.LESS_EQUAL if self._match("=") else tt.LESS)
         elif char == "=":
