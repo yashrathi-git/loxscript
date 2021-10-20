@@ -29,4 +29,6 @@ class Environment:
         if name.lexeme in self._variables.keys():
             self._variables[name.lexeme] = value
             return
+        if self._enclosing is not None:
+            return self._enclosing.assign(name, value)
         raise RuntimeException(name, f"Undefined variable {name.lexeme}")
