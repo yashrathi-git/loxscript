@@ -1,7 +1,7 @@
 import sys
 from pathlib import Path
 from pprint import pprint
-
+import typing as t
 from lox.lexer.scanner import Scanner
 from lox.parser.parser import Parser
 from .handle_errors import has_any_error, update_error
@@ -38,8 +38,11 @@ def run_file(fp: str):
         sys.exit(1)
 
 
-def main():
-    args = sys.argv
+def main(
+    args: t.Optional[t.List[str]] = None,
+):  # For debugging purposes, args could be provided directly
+    if not args:
+        args = sys.argv
     if len(args) > 2:
         print("Usage: pylox SCRIPT")
         sys.exit(1)

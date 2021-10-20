@@ -139,6 +139,10 @@ class Parser:
         return ParseError()
 
     def _synchronize(self):
+        # So that at least the token where we get error get consumed
+        # and we don't fall into infinite recursion
+        self._advance()
+
         while not self._is_at_end():
             if self._previous().type == tt.SEMICOLON:
                 return
