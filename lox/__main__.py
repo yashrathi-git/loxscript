@@ -7,13 +7,15 @@ from lox.parser.parser import Parser
 from .handle_errors import has_any_error, update_error
 from .interpreter.interpreter import Interpreter
 
+interpreter = Interpreter()
+
 
 def run(source):
     token_list = Scanner(source=source).get_tokens()
-    expr = Parser(token_list).parse()
-    if not has_any_error():
-        interpreter = Interpreter()
-        interpreter.interpret(expr)
+    statements = Parser(token_list).parse()
+    if has_any_error():
+        return
+    interpreter.interpret(statements)
 
 
 def run_repl():

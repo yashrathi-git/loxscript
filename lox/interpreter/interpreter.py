@@ -1,14 +1,44 @@
 import operator
 
+from .environment import Environment
 from ..handle_errors import runtime_error
 from ..lexer.token import Token
 from ..parser import expr as e
 from ..lexer.token_type import TokenType as tt
 import typing as t
 from ..errors import RuntimeException
+from ..parser import stmt
 
 
-class Interpreter(e.BaseVisitor):
+class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
+    def __init__(self):
+        self._environment = Environment()
+
+    def visit_assign(self, assignment: e.Assign):
+        value = self._evaluate(assignment.value)
+        self._environment.assign(name=assignment.name, value=value)
+        return value
+
+    def visit_var_statement(self, stmt: stmt.Var):
+        """
+        Visitor for variable declaration statement
+        """
+        value = None
+        if stmt.initializer is not None:
+            # Evaluate the ast class, and get python object as value
+            value = self._evaluate(stmt.initializer)
+        self._environment.define(name=stmt.name.lexeme, value=value)
+
+    def visit_variable_expr(self, var: e.Variable):
+        return self._environment.get(var.name)
+
+    def visit_expression_statement(self, stmt: stmt.Expression):
+        self._evaluate(stmt.expression)
+
+    def visit_print_statement(self, stmt: stmt.Print):
+        value = self._evaluate(stmt.expression)
+        print(self._stringify(value))
+
     def _evaluate(self, expr: e.Expr):
         return expr.accept(self)
 
@@ -68,6 +98,22 @@ class Interpreter(e.BaseVisitor):
         if op.type == tt.BANG_EQUAL:
             return not self._is_equal(left, right)
 
+    def visit_block(self, block: stmt.Block):
+        self._execute_block(block.statements, Environment(self._environment))
+
+    def _execute_block(self, statements: t.List[stmt.Stmt], environment: Environment):
+        """
+        Uses a new lexical environment to execute the block.
+        After execution it resets the environment, to previous one.
+        """
+        previous = self._environment
+        try:
+            self._environment = environment
+            for statement in statements:
+                self._execute(statement)
+        finally:
+            self._environment = previous
+
     @staticmethod
     def _check_number_operands(operator_: Token, *operands: t.Any):
         if all(isinstance(o, float) for o in operands):
@@ -91,9 +137,12 @@ class Interpreter(e.BaseVisitor):
             return str(obj).lower()
         return str(obj)
 
-    def interpret(self, expression: e.Expr):
+    def interpret(self, statements: t.List[stmt.Stmt]):
         try:
-            value = self._evaluate(expression)
-            print(self._stringify(value))
+            for st in statements:
+                self._execute(st)
         except RuntimeException as err:
             runtime_error(err)
+
+    def _execute(self, st: stmt.Stmt):
+        st.accept(self)

@@ -20,6 +20,14 @@ class BaseVisitor(ABC):
     def visit_literal_expr(self, literal: "Literal"):
         pass
 
+    @abstractmethod
+    def visit_variable_expr(self, var: "Variable"):
+        pass
+
+    @abstractmethod
+    def visit_assign(self, assignment: "Assign"):
+        pass
+
 
 class Expr(ABC):
     """
@@ -76,3 +84,20 @@ class Unary(Expr):
 
     def __repr__(self):
         return f"({self.operator.lexeme}{self.right})"
+
+
+class Variable(Expr):
+    def accept(self, visitor: BaseVisitor) -> t.Any:
+        return visitor.visit_variable_expr(self)
+
+    def __init__(self, name: Token):
+        self.name = name
+
+
+class Assign(Expr):
+    def accept(self, visitor: BaseVisitor) -> t.Any:
+        return visitor.visit_assign(self)
+
+    def __init__(self, name: Token, value: Expr):
+        self.name = name
+        self.value = value
