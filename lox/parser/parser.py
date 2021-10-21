@@ -176,7 +176,20 @@ class Parser:
             return self._print_statement()
         if self._match(tt.LEFT_PAREN):
             return stmt.Block(statements=self._block())
+        if self._match(tt.IF):
+            return self._if_statement()
+        if self._match(tt.WHILE):
+            return self._while_statement()
+        if self._match(tt.FOR):
+            return self._for_statement()
         return self._expression_statement()
+
+    def _while_statement(self):
+        self._consume(tt.LEFT_BRACE, "Expect '(' after while")
+        condition = self._expression()
+        self._consume(tt.RIGHT_BRACE, "Except ')' after condition")
+        body = self._statement()
+        return stmt.While(condition, body)
 
     def parse(self) -> t.Optional[t.List[stmt.Stmt]]:
         """
@@ -217,7 +230,7 @@ class Parser:
                         | equality ;
 
         """
-        expr = self._equality()
+        expr = self._or()
 
         if self._match(tt.EQUAL):
             equals = self._previous()  # Equal `=` sign, that `match` consumed
@@ -230,6 +243,23 @@ class Parser:
             self._error(equals, "Invalid assignment target")
         return expr
 
+    def _or(self):
+        expr = self._and()
+        while self._match(tt.OR):
+            operator = self._previous()
+            right = self._and()
+            expr = e.Logical(left=expr, operator=operator, right=right)
+        return expr
+
+    def _and(self):
+        expr = self._equality()
+
+        while self._match(tt.AND):
+            operator = self._previous()
+            right = self._equality()
+            expr = e.Logical(left=expr, operator=operator, right=right)
+        return expr
+
     def _block(self):
         statements: t.List[stmt.Stmt] = []
 
@@ -239,3 +269,57 @@ class Parser:
         self._consume(tt.RIGHT_PAREN, "Expect '}' after block")
 
         return statements
+
+    def _if_statement(self):
+        self._consume(tt.LEFT_BRACE, "Expected '(' after 'if'")
+        condition = self._expression()
+        self._consume(tt.RIGHT_BRACE, "Expected ')' after if condition")
+
+        then_branch = self._statement()
+        else_branch = None
+        # what will happen when we evaluate nested if statement, like this
+        # if (first) if (second) whenTrue(); else whenFalse();
+        if self._match(tt.ELSE):
+            # This makes it so that the else block is the part of the nearest
+            # if statement
+            # `then_branch = self._statement()` already have consumed the `else`
+            # before it returns
+            else_branch = self._statement()
+
+        return stmt.If(condition, then_branch, else_branch)
+
+    def _for_statement(self):
+        self._consume(tt.LEFT_BRACE, "Expected '(' after for keyword")
+        initializer: t.Optional[stmt.Stmt] = None
+
+        if self._match(tt.SEMICOLON):
+            initializer = None
+        elif self._match(tt.VAR):
+            initializer = self._variable_declaration()
+        else:
+            initializer = self._expression_statement()
+
+        condition: t.Optional[e.Expr] = None
+
+        if not self._match(tt.SEMICOLON):
+            condition = self._expression()
+        self._consume(tt.SEMICOLON, "Expected ';' after condition")
+
+        increment: t.Optional[e.Expr] = None
+
+        if not self._check(tt.RIGHT_BRACE):
+            increment = self._expression()
+        self._consume(tt.RIGHT_BRACE, "Expected ';' after for clauses.")
+
+        body = self._statement()
+        if increment is not None:
+            body = stmt.Block([increment, body])
+
+        if condition is None:
+            condition = e.Literal(True)
+        body = stmt.While(condition=condition, block=body)
+
+        if initializer is not None:
+            body = stmt.Block([initializer, body])
+
+        return body

@@ -11,6 +11,26 @@ from ..parser import stmt
 
 
 class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
+    def visit_logical(self, logical: e.Logical):
+        left = self._evaluate(logical.left)
+        op = logical.operator.type
+
+        # We don't evaluate right unless we need to
+        if op == tt.OR:
+            if self._is_truthy(left):
+                return left
+        elif op == tt.AND:
+            if not self._is_truthy(left):
+                return left
+
+        return self._evaluate(logical.right)
+
+    def visit_if_statement(self, stmt: stmt.If):
+        if self._is_truthy(self._evaluate(stmt.condition)):
+            self._execute(stmt.then_branch)
+        elif stmt.else_branch is not None:
+            self._execute(stmt.else_branch)
+
     def __init__(self):
         self._environment = Environment()
 
@@ -146,3 +166,7 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
 
     def _execute(self, st: stmt.Stmt):
         st.accept(self)
+
+    def visit_while_statement(self, stmt: stmt.While):
+        while self._is_truthy(self._evaluate(stmt.condition)):
+            self._execute(stmt.block)

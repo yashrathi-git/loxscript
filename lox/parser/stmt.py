@@ -21,6 +21,14 @@ class StmtVisitor(ABC):
     def visit_block(self, block: "Block"):
         return None
 
+    @abstractmethod
+    def visit_if_statement(self, stmt: "If"):
+        return None
+
+    @abstractmethod
+    def visit_while_statement(self, stmt: "While"):
+        return None
+
 
 class Stmt:
     @abstractmethod
@@ -59,3 +67,22 @@ class Block(Stmt):
 
     def __init__(self, statements: t.List[Stmt]):
         self.statements = statements
+
+
+class If(Stmt):
+    def accept(self, visitor: StmtVisitor):
+        visitor.visit_if_statement(self)
+
+    def __init__(self, condition: e.Expr, then_branch: Stmt, else_branch: Stmt):
+        self.condition = condition
+        self.then_branch = then_branch
+        self.else_branch = else_branch
+
+
+class While(Stmt):
+    def accept(self, visitor: StmtVisitor):
+        return visitor.visit_while_statement(self)
+
+    def __init__(self, condition: e.Expr, block: Stmt):
+        self.condition = condition
+        self.block = block

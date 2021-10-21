@@ -28,6 +28,10 @@ class BaseVisitor(ABC):
     def visit_assign(self, assignment: "Assign"):
         pass
 
+    @abstractmethod
+    def visit_logical(self, logical: "Logical"):
+        pass
+
 
 class Expr(ABC):
     """
@@ -101,3 +105,13 @@ class Assign(Expr):
     def __init__(self, name: Token, value: Expr):
         self.name = name
         self.value = value
+
+
+class Logical(Expr):
+    def __init__(self, left: Expr, operator: Token, right: Expr):
+        self.left = left
+        self.operator = operator
+        self.right = right
+
+    def accept(self, visitor: BaseVisitor) -> t.Any:
+        return visitor.visit_logical(self)
