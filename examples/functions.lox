@@ -1,0 +1,14 @@
+
+fun print_tree(n) {
+    for (var x=1; x<=n; x=x+1) {
+        var current = '';
+        for (var temp=1; temp<=x; temp = temp+1) {
+            current = current + '*';
+        }
+        print current;
+    }
+
+}
+
+
+print_tree(10);

@@ -1,24 +1,38 @@
-var main = 4;
-{
-    // This is just a comment
-    var main = 5;
-    var eval_expr = 2*10/4+7 + (7/5);
-    print eval_expr;
-    print main;
-}
-print main;
-print 'Hello' + ' World!';
+// var main = 4;
+// {
+//     // This is just a comment
+//     var main = 5;
+//     var eval_expr = 2*10/4+7 + (7/5);
+//     print eval_expr;
+//     print main;
+// }
+// print main;
+// print 'Hello' + ' World!';
+//
+// if (2 == 2) {
+//     print "Inside 2==2 block";
+// } else {
+//     print "Inside else block (shouldn't)";
+// }
+//
+// {
+//   var i = 0;
+//   while (i < 10) {
+//     print i;
+//     i = i + 1;
+//   }
+// }
 
-if (2 == 2) {
-    print "Inside 2==2 block";
-} else {
-    print "Inside else block (shouldn't)";
-}
-
-{
+fun makeCounter() {
   var i = 0;
-  while (i < 10) {
-    print i;
+  fun count() {
     i = i + 1;
+    print i;
   }
+
+  return count;
 }
+
+var counter = makeCounter();
+counter(); // "1".
+counter(); // "2".
