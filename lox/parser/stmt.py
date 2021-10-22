@@ -29,6 +29,14 @@ class StmtVisitor(ABC):
     def visit_while_statement(self, stmt: "While"):
         return None
 
+    @abstractmethod
+    def visit_function(self, stmt: "Function"):
+        return None
+
+    @abstractmethod
+    def visit_return_statement(self, stmt: "Return"):
+        return None
+
 
 class Stmt:
     @abstractmethod
@@ -86,3 +94,22 @@ class While(Stmt):
     def __init__(self, condition: e.Expr, block: Stmt):
         self.condition = condition
         self.block = block
+
+
+class Function(Stmt):
+    def accept(self, visitor: StmtVisitor) -> t.Any:
+        return visitor.visit_function(self)
+
+    def __init__(self, name: Token, params: t.List[Token], body: t.List[Stmt]):
+        self.body = body
+        self.params = params
+        self.name = name
+
+
+class Return(Stmt):
+    def accept(self, visitor: StmtVisitor):
+        visitor.visit_return_statement(self)
+
+    def __init__(self, keyword: Token, value: e.Expr):
+        self.keyword = keyword
+        self.value = value

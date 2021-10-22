@@ -101,7 +101,33 @@ class Parser:
             right = self._unary()
             return e.Unary(operator, right)
 
-        return self._primary()
+        return self._call()
+
+    def _call(self):
+        expr = self._primary()
+        while True:
+            if not self._match(tt.LEFT_BRACE):
+                break
+            expr = self._finish_call(expr)
+
+        return expr
+
+    def _finish_call(self, callee: e.Expr):
+        # `(` is already consumed
+        arguments = []
+        if not self._check(
+            tt.RIGHT_BRACE
+        ):  # If next token is `)`, there's no arguments
+            arguments.append(self._expression())
+            while self._match(tt.COMMA):
+                if len(arguments) >= 255:
+                    # It doesn't raise the error(returned), because the parser isn't in
+                    # confused state. We don't want it to synchronize.
+                    self._error(self._peek(), "Can't have more than 255 arguments.")
+
+                arguments.append(self._expression())
+        paren = self._consume(tt.RIGHT_BRACE, "Expected ')' after arguments")
+        return e.Call(callee=callee, paren=paren, arguments=arguments)
 
     def _expression(self):
         return self._assignment()
@@ -182,7 +208,30 @@ class Parser:
             return self._while_statement()
         if self._match(tt.FOR):
             return self._for_statement()
+        if self._match(tt.FUNCTION):
+            return self._function_declaration_statement(kind="function")
+        if self._match(tt.RETURN):
+            return self._return_statement()
         return self._expression_statement()
+
+    def _function_declaration_statement(self, kind: str):
+        fname = self._consume(tt.IDENTIFIER, f"{kind} needs to have a name")
+        self._consume(tt.LEFT_BRACE, "Expected '(' after fun keyword")
+        parameters: t.List[Token] = []
+        if not self._check(tt.RIGHT_BRACE):  # No parameters
+            parameters.append(self._consume(tt.IDENTIFIER, "Expected parameter name"))
+            while self._match(tt.COMMA):
+                if len(parameters) >= 255:
+                    self._error(self._peek(), "Cannot have more than 255 parameters.")
+                parameters.append(
+                    self._consume(tt.IDENTIFIER, "Expected parameter name")
+                )
+        self._consume(tt.RIGHT_BRACE, "Expected ')' after parameters")
+        self._consume(
+            tt.LEFT_PAREN, "Expected '{' before body."
+        )  # `block` method assumes `{` is already consumed
+        statements = self._block()
+        return stmt.Function(name=fname, params=parameters, body=statements)
 
     def _while_statement(self):
         self._consume(tt.LEFT_BRACE, "Expect '(' after while")
@@ -324,3 +373,12 @@ class Parser:
             body = stmt.Block([initializer, body])
 
         return body
+
+    def _return_statement(self):
+        keyword = self._previous()
+        value = None
+        if not self._check(tt.SEMICOLON):
+            value = self._expression()
+
+        self._consume(tt.SEMICOLON, "Expected ';' after return")
+        return stmt.Return(keyword=keyword, value=value)

@@ -1,16 +1,46 @@
 import operator
 
+from .callable import Callable, Function
 from .environment import Environment
 from ..handle_errors import runtime_error
 from ..lexer.token import Token
 from ..parser import expr as e
 from ..lexer.token_type import TokenType as tt
 import typing as t
-from ..errors import RuntimeException
+from ..errors import RuntimeException, Return
 from ..parser import stmt
+from .natives import Clock
 
 
 class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
+    def visit_return_statement(self, stmt: stmt.Return):
+        value = None
+        if stmt.value is not None:
+            value = self._evaluate(stmt.value)
+        raise Return(value)
+
+    def visit_function(self, stmt: stmt.Function):
+        function = Function(stmt)
+        self._environment.define(stmt.name.lexeme, function)
+
+    def visit_call_expr(self, call: e.Call):
+        # This would evaluate it as a variable and give us `Callable` class object
+        # if not it's not a callable object
+        callee = self._evaluate(call.callee)
+        args = []
+        for arg in call.arguments:
+            args.append(self._evaluate(arg))
+        if not isinstance(callee, Callable):
+            raise RuntimeException(call.paren, "Object is not callable")
+        function: Callable = callee
+        if function.arity != len(args):
+            raise RuntimeException(
+                call.paren, f"Expected {function.arity} arguments but got {len(args)}"
+            )
+        # Because the function call itself is an expression, we are just able to return
+        # the value.
+        return function.call(self, args)
+
     def visit_logical(self, logical: e.Logical):
         left = self._evaluate(logical.left)
         op = logical.operator.type
@@ -32,7 +62,9 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
             self._execute(stmt.else_branch)
 
     def __init__(self):
-        self._environment = Environment()
+        self.globals = Environment()
+        self._environment = self.globals
+        self.globals.define("clock", Clock())
 
     def visit_assign(self, assignment: e.Assign):
         value = self._evaluate(assignment.value)
@@ -119,9 +151,9 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
             return not self._is_equal(left, right)
 
     def visit_block(self, block: stmt.Block):
-        self._execute_block(block.statements, Environment(self._environment))
+        self.execute_block(block.statements, Environment(self._environment))
 
-    def _execute_block(self, statements: t.List[stmt.Stmt], environment: Environment):
+    def execute_block(self, statements: t.List[stmt.Stmt], environment: Environment):
         """
         Uses a new lexical environment to execute the block.
         After execution it resets the environment, to previous one.
