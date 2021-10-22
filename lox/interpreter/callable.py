@@ -22,11 +22,17 @@ class Callable(ABC):
 
 
 class Function(Callable):
-    def __init__(self, declaration: stmt.Function):
+    def __init__(self, declaration: stmt.Function, closure: Environment):
         self._declaration = declaration
+        # This environment is of when the function was declared not when it is called
+        # which is what we want in this case, as it represents the lexical surroundings
+        # of the function declaration.
+        self._closure = closure
 
     def call(self, interpreter, arguments: t.List[t.Any]) -> t.Any:
-        environment = Environment(interpreter.globals)
+        # This would allow us to have variables scoped in the enclosing environment
+        # of the function declaration and above.
+        environment = Environment(enclosing=self._closure)
         # The function is being called
         # we know the name of positional args from `arg_value` which comes from
         # function declaration

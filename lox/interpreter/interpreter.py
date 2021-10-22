@@ -20,7 +20,7 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
         raise Return(value)
 
     def visit_function(self, stmt: stmt.Function):
-        function = Function(stmt)
+        function = Function(stmt, self._environment)
         self._environment.define(stmt.name.lexeme, function)
 
     def visit_call_expr(self, call: e.Call):
