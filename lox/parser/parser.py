@@ -313,7 +313,8 @@ class Parser:
 
         body = self._statement()
         if increment is not None:
-            body = stmt.Block([increment, body])
+            # First let the body run, and then the increment runs for each loop we do
+            body = stmt.Block([body, increment])
 
         if condition is None:
             condition = e.Literal(True)
