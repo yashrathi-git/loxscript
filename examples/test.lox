@@ -23,16 +23,24 @@
 //   }
 // }
 
-fun makeCounter() {
-  var i = 0;
-  fun count() {
-    i = i + 1;
-    print i;
-  }
+// fun makeCounter() {
+//   var i = 0;
+//   fun count() {
+//     i = i + 1;
+//     print i;
+//   }
+//
+//   return count;
+// }
+//
+// var counter = makeCounter();
+// counter(); // "1".
+// counter(); // "2".
 
-  return count;
-}
+// fun scope(a) {
+//   var a = "local";
+//   return a;
+// }
+// print scope(10);
 
-var counter = makeCounter();
-counter(); // "1".
-counter(); // "2".
+return 'te';

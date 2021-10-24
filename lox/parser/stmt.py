@@ -6,15 +6,15 @@ import typing as t
 
 class StmtVisitor(ABC):
     @abstractmethod
-    def visit_expression_statement(self, stmt: "Expression"):
+    def visit_expression_statement(self, expr_stmt: "Expression"):
         return None
 
     @abstractmethod
-    def visit_print_statement(self, stmt: "Print"):
+    def visit_print_statement(self, print_stmt: "Print"):
         return None
 
     @abstractmethod
-    def visit_var_statement(self, stmt: "Var"):
+    def visit_var_statement(self, var_stmt: "Var"):
         return None
 
     @abstractmethod
@@ -22,19 +22,19 @@ class StmtVisitor(ABC):
         return None
 
     @abstractmethod
-    def visit_if_statement(self, stmt: "If"):
+    def visit_if_statement(self, if_stmt: "If"):
         return None
 
     @abstractmethod
-    def visit_while_statement(self, stmt: "While"):
+    def visit_while_statement(self, while_stmt: "While"):
         return None
 
     @abstractmethod
-    def visit_function(self, stmt: "Function"):
+    def visit_function(self, func_stmt: "Function"):
         return None
 
     @abstractmethod
-    def visit_return_statement(self, stmt: "Return"):
+    def visit_return_statement(self, return_stmt: "Return"):
         return None
 
 

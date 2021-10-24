@@ -1,24 +1,33 @@
 import sys
 from pathlib import Path
-from pprint import pprint
 import typing as t
+
+from lox.interpreter.resolver import Resolver
 from lox.lexer.scanner import Scanner
 from lox.parser.parser import Parser
 from .handle_errors import has_any_error, update_error
 from .interpreter.interpreter import Interpreter
 
-interpreter = Interpreter()
 
+class App:
+    def __init__(self):
+        self._interpreter = Interpreter()
 
-def run(source):
-    token_list = Scanner(source=source).get_tokens()
-    statements = Parser(token_list).parse()
-    if has_any_error():
-        return
-    interpreter.interpret(statements)
+    def __call__(self, source):
+        token_list = Scanner(source=source).get_tokens()
+        statements = Parser(token_list).parse()
+        if has_any_error():
+            return
+        resolver = Resolver(self._interpreter)
+        resolver.resolve(statements)
+        if has_any_error():
+            return
+
+        self._interpreter.interpret(statements)
 
 
 def run_repl():
+    run = App()
     while True:
         try:
             code = input("> ")
@@ -32,6 +41,7 @@ def run_repl():
 
 def run_file(fp: str):
     code = Path(fp).read_text()
+    run = App()
     run(source=code)
 
     if has_any_error():

@@ -32,3 +32,17 @@ class Environment:
         if self._enclosing is not None:
             return self._enclosing.assign(name, value)
         raise RuntimeException(name, f"Undefined variable {name.lexeme}")
+
+    def ancestor(self, distance: int) -> "Environment":
+        environment = self
+        for _ in range(distance):
+            environment = environment._enclosing
+        return environment
+
+    def get_at(self, dist: int, name: str) -> t.Any:
+        # We don't handle the case of KeyError because we know it will be there because
+        # the resolver have found it before.
+        return self.ancestor(dist)._variables[name]
+
+    def assign_at(self, distance: int, name: str, value: t.Any) -> None:
+        self.ancestor(distance)._variables[name] = value

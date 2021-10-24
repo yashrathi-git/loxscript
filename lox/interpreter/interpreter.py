@@ -13,15 +13,15 @@ from .natives import Clock
 
 
 class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
-    def visit_return_statement(self, stmt: stmt.Return):
+    def visit_return_statement(self, return_stmt: stmt.Return):
         value = None
-        if stmt.value is not None:
-            value = self._evaluate(stmt.value)
+        if return_stmt.value is not None:
+            value = self._evaluate(return_stmt.value)
         raise Return(value)
 
-    def visit_function(self, stmt: stmt.Function):
-        function = Function(stmt, self._environment)
-        self._environment.define(stmt.name.lexeme, function)
+    def visit_function(self, func_stmt: stmt.Function):
+        function = Function(func_stmt, self._environment)
+        self._environment.define(func_stmt.name.lexeme, function)
 
     def visit_call_expr(self, call: e.Call):
         # This would evaluate it as a variable and give us `Callable` class object
@@ -55,40 +55,52 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
 
         return self._evaluate(logical.right)
 
-    def visit_if_statement(self, stmt: stmt.If):
-        if self._is_truthy(self._evaluate(stmt.condition)):
-            self._execute(stmt.then_branch)
-        elif stmt.else_branch is not None:
-            self._execute(stmt.else_branch)
+    def visit_if_statement(self, if_stmt: stmt.If):
+        if self._is_truthy(self._evaluate(if_stmt.condition)):
+            self._execute(if_stmt.then_branch)
+        elif if_stmt.else_branch is not None:
+            self._execute(if_stmt.else_branch)
 
     def __init__(self):
         self.globals = Environment()
         self._environment = self.globals
         self.globals.define("clock", Clock())
+        self._locals: t.Dict[e.Expr, int] = {}
 
     def visit_assign(self, assignment: e.Assign):
         value = self._evaluate(assignment.value)
+        distance = self._locals.get(assignment)
+        if distance is not None:
+            self._environment.assign_at(distance, assignment.name, value)
+        else:
+            self.globals.assign(assignment.name, value)
         self._environment.assign(name=assignment.name, value=value)
         return value
 
-    def visit_var_statement(self, stmt: stmt.Var):
+    def visit_var_statement(self, var_stmt: stmt.Var):
         """
         Visitor for variable declaration statement
         """
         value = None
-        if stmt.initializer is not None:
+        if var_stmt.initializer is not None:
             # Evaluate the ast class, and get python object as value
-            value = self._evaluate(stmt.initializer)
-        self._environment.define(name=stmt.name.lexeme, value=value)
+            value = self._evaluate(var_stmt.initializer)
+        self._environment.define(name=var_stmt.name.lexeme, value=value)
 
     def visit_variable_expr(self, var: e.Variable):
-        return self._environment.get(var.name)
+        return self.look_up_variable(var.name, var)
 
-    def visit_expression_statement(self, stmt: stmt.Expression):
-        self._evaluate(stmt.expression)
+    def look_up_variable(self, name: Token, var: e.Expr):
+        dist = self._locals.get(var)
+        if dist is not None:
+            return self._environment.get_at(dist, name.lexeme)
+        return self.globals.get(name)
 
-    def visit_print_statement(self, stmt: stmt.Print):
-        value = self._evaluate(stmt.expression)
+    def visit_expression_statement(self, expr_stmt: stmt.Expression):
+        self._evaluate(expr_stmt.expression)
+
+    def visit_print_statement(self, print_stmt: stmt.Print):
+        value = self._evaluate(print_stmt.expression)
         print(self._stringify(value))
 
     def _evaluate(self, expr: e.Expr):
@@ -189,6 +201,9 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
             return str(obj).lower()
         return str(obj)
 
+    def _execute(self, st: stmt.Stmt):
+        st.accept(self)
+
     def interpret(self, statements: t.List[stmt.Stmt]):
         try:
             for st in statements:
@@ -196,9 +211,9 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
         except RuntimeException as err:
             runtime_error(err)
 
-    def _execute(self, st: stmt.Stmt):
-        st.accept(self)
+    def visit_while_statement(self, while_stmt: stmt.While):
+        while self._is_truthy(self._evaluate(while_stmt.condition)):
+            self._execute(while_stmt.block)
 
-    def visit_while_statement(self, stmt: stmt.While):
-        while self._is_truthy(self._evaluate(stmt.condition)):
-            self._execute(stmt.block)
+    def resolve(self, expr: e.Expr, depth: int):
+        self._locals[expr] = depth
