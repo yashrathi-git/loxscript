@@ -49,3 +49,12 @@ class Function(Callable):
     @property
     def arity(self) -> int:
         return len(self._declaration.params)
+
+    def bind(self, instance):
+        # type of instance is `ClassInstance`
+        # we would get a circular import if we import it here
+        environment = Environment(enclosing=self._closure)
+        environment.define("this", instance)
+        # `this` keyword is treated like a variable in enclosing environment that points
+        # to `ClassInstance` instance
+        return Function(self._declaration, environment)

@@ -106,10 +106,13 @@ class Parser:
     def _call(self):
         expr = self._primary()
         while True:
-            if not self._match(tt.LEFT_BRACE):
+            if self._match(tt.LEFT_BRACE):
+                expr = self._finish_call(expr)
+            elif self._match(tt.DOT):
+                name = self._consume(tt.IDENTIFIER, "Expected property name after '.'")
+                expr = e.Get(expr, name)
+            else:
                 break
-            expr = self._finish_call(expr)
-
         return expr
 
     def _finish_call(self, callee: e.Expr):
@@ -147,6 +150,8 @@ class Parser:
             return e.Grouping(expression=expr)
         if self._match(tt.IDENTIFIER):
             return e.Variable(self._previous())
+        if self._match(tt.THIS):
+            return e.This(self._previous())
         raise self._error(self._peek(), "Expected expression.")
 
     def _consume(self, type_: tt, message: str):
@@ -208,8 +213,6 @@ class Parser:
             return self._while_statement()
         if self._match(tt.FOR):
             return self._for_statement()
-        if self._match(tt.FUNCTION):
-            return self._function_declaration_statement(kind="function")
         if self._match(tt.RETURN):
             return self._return_statement()
         return self._expression_statement()
@@ -254,6 +257,11 @@ class Parser:
         try:
             if self._match(tt.VAR):
                 return self._variable_declaration()
+            if self._match(tt.CLASS):
+                return self._class_declaration()
+            if self._match(tt.FUNCTION):
+                return self._function_declaration_statement(kind="function")
+
             return self._statement()
         except ParseError:
             self._synchronize()
@@ -289,6 +297,8 @@ class Parser:
             rhs = self._assignment()
             if isinstance(expr, e.Variable):
                 return e.Assign(name=expr.name, value=rhs)
+            elif isinstance(expr, e.Get):
+                return e.Set(object_=expr.object, name=expr.name, value=rhs)
             self._error(equals, "Invalid assignment target")
         return expr
 
@@ -382,3 +392,16 @@ class Parser:
 
         self._consume(tt.SEMICOLON, "Expected ';' after return")
         return stmt.Return(keyword=keyword, value=value)
+
+    def _class_declaration(self):
+        name = self._consume(tt.IDENTIFIER, "Expected class name")
+        self._consume(tt.LEFT_PAREN, "Expected '{' before class body")
+
+        methods: t.List[stmt.Function] = []
+
+        while (not self._check(tt.RIGHT_PAREN)) and (not self._is_at_end()):
+            methods.append(self._function_declaration_statement(kind="method"))
+
+        self._consume(tt.RIGHT_PAREN, "Expected '}' after class body")
+
+        return stmt.Class(name=name, methods=methods)

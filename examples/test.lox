@@ -43,4 +43,40 @@
 // }
 // print scope(10);
 
-return 'te';
+// return 'te';
+
+// fun test() {
+//     fun wrapped() {
+//         print "wrapped";
+//     }
+//
+//     wrapped();
+//
+// }
+//
+// test();
+
+// class Test {
+//     constructor() {
+//
+//     }
+// }
+// var t = Test();
+// t.expr = 'TEST';
+// print t.expr;
+
+class Cake {
+  init() {
+    this.test_attr = 'xyz';
+    var adjective = "delicious";
+    print "The "  + " cake is " + adjective + "!";
+  }
+  test() {
+    print this.test_attr;
+  }
+}
+
+var cake = Cake();
+cake.flavor = "German chocolate";
+print cake.init();
+cake.test();

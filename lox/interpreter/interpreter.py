@@ -2,6 +2,7 @@ import operator
 
 from .callable import Callable, Function
 from .environment import Environment
+from .lox_class import Class, ClassInstance
 from ..handle_errors import runtime_error
 from ..lexer.token import Token
 from ..parser import expr as e
@@ -13,6 +14,36 @@ from .natives import Clock
 
 
 class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
+    def visit_this_expr(self, this_expr: e.This):
+        return self.look_up_variable(this_expr.keyword, this_expr)
+
+    def visit_set_expr(self, set_expr: e.Set):
+        object_ = self._evaluate(set_expr.object)
+        if not isinstance(object_, ClassInstance):
+            raise RuntimeException(
+                set_expr.name, "Only class instances could have fields"
+            )
+        value = self._evaluate(set_expr.value)
+        object_.set(set_expr.name, value)
+        return value
+
+    def visit_get_expr(self, get_expr: e.Get):
+        object_ = self._evaluate(get_expr.object)
+        if isinstance(object_, ClassInstance):
+            return object_.get(get_expr.name)
+        raise RuntimeException(get_expr.name, "Only instances can have properties")
+
+    def visit_class_statement(self, class_stmt: stmt.Class):
+        self._environment.define(
+            class_stmt.name.lexeme, None
+        )  # This allows references to the class in its own methods
+        methods: t.Dict[str, Function] = {}
+        for method in class_stmt.methods:
+            function = Function(method, self._environment)
+            methods[method.name.lexeme] = function
+        klass = Class(class_stmt.name.lexeme, methods)
+        self._environment.assign(class_stmt.name, klass)
+
     def visit_return_statement(self, return_stmt: stmt.Return):
         value = None
         if return_stmt.value is not None:
@@ -65,6 +96,12 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
         self.globals = Environment()
         self._environment = self.globals
         self.globals.define("clock", Clock())
+        # `locals` store the distance(where they were declared) of
+        # the referenced variable from the
+        # current scope(where they are being referenced)
+        # It is able to work just by being a flat dict because, it stores the variable
+        # referenced as the instance of the class, and different instances are treated
+        # as different by python.
         self._locals: t.Dict[e.Expr, int] = {}
 
     def visit_assign(self, assignment: e.Assign):

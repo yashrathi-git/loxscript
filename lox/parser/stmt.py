@@ -37,6 +37,10 @@ class StmtVisitor(ABC):
     def visit_return_statement(self, return_stmt: "Return"):
         return None
 
+    @abstractmethod
+    def visit_class_statement(self, class_stmt: "Class"):
+        pass
+
 
 class Stmt:
     @abstractmethod
@@ -113,3 +117,12 @@ class Return(Stmt):
     def __init__(self, keyword: Token, value: e.Expr):
         self.keyword = keyword
         self.value = value
+
+
+class Class(Stmt):
+    def accept(self, visitor: StmtVisitor):
+        visitor.visit_class_statement(self)
+
+    def __init__(self, name: Token, methods: t.List[Function]):
+        self.name = name
+        self.methods = methods

@@ -36,6 +36,18 @@ class BaseVisitor(ABC):
     def visit_call_expr(self, call: "Call"):
         pass
 
+    @abstractmethod
+    def visit_get_expr(self, get_expr: "Get"):
+        pass
+
+    @abstractmethod
+    def visit_set_expr(self, set_expr: "Set"):
+        pass
+
+    @abstractmethod
+    def visit_this_expr(self, this_expr: "This"):
+        pass
+
 
 class Expr(ABC):
     """
@@ -129,3 +141,32 @@ class Call(Expr):
 
     def accept(self, visitor: BaseVisitor) -> t.Any:
         return visitor.visit_call_expr(self)
+
+
+class Get(Expr):
+    def __init__(self, object_: Expr, name: Token):
+        self.object = object_
+        self.name = name
+
+    def accept(self, visitor: BaseVisitor) -> t.Any:
+        return visitor.visit_get_expr(self)
+
+
+class Set(Expr):
+    def accept(self, visitor: BaseVisitor) -> t.Any:
+        return visitor.visit_set_expr(self)
+
+    def __init__(self, object_: Expr, name: Token, value: Expr):
+        # Object is, ex in `a.b.c`, `a.b` is the object(of type: e.Get in this case)
+        # and `c` is the name
+        self.object = object_
+        self.name = name
+        self.value = value
+
+
+class This(Expr):
+    def accept(self, visitor: BaseVisitor) -> t.Any:
+        return visitor.visit_this_expr(self)
+
+    def __init__(self, keyword: Token):
+        self.keyword = keyword

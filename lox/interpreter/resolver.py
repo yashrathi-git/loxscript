@@ -13,13 +13,45 @@ import typing as t
 class FunctionType(Enum):
     FUNCTION = auto()
     NONE = auto()
+    METHOD = auto()
+    INITIALIZER = auto()
+
+
+class ClassType(Enum):
+    CLASS = auto()
+    NONE = auto()
 
 
 class Resolver(e.BaseVisitor, stmt.StmtVisitor):
+    def visit_set_expr(self, set_expr: e.Set):
+        # Value is the value of the variable
+        self.resolve(set_expr.value)
+        # Object is, ex in `a.b.c`, `a.b` is the object and `c` is the name
+        # `c` might not exist yet because we can dynamically set those
+        self.resolve(set_expr.object)
+
+    def visit_get_expr(self, get_expr: e.Get):
+        self.resolve(get_expr.object)
+
+    def visit_class_statement(self, class_stmt):
+        enclosing_class = self._current_class
+        self._current_class = ClassType.CLASS
+        self._declare(class_stmt.name)
+        self._define(class_stmt.name)
+        with self._new_scope():
+            # `this` is treated like a variable in the enclosing scope
+            self._scopes[-1]["this"] = True
+            for method in class_stmt.methods:
+                self._resolve_function(
+                    method, FunctionType.METHOD
+                )  # this also start create a new scope just for the method
+        self._current_class = enclosing_class
+
     def __init__(self, interpreter: Interpreter):
         self._interpreter = interpreter
         self._scopes: t.List[t.Dict[str, bool]] = []
         self._current_function: FunctionType = FunctionType.NONE
+        self._current_class: ClassType = ClassType.NONE
 
     def visit_print_statement(self, print_stmt: stmt.Print):
         self.resolve(print_stmt.expression)
@@ -54,7 +86,11 @@ class Resolver(e.BaseVisitor, stmt.StmtVisitor):
         self._scopes.pop()
 
     @singledispatchmethod
-    def resolve(self, arg):
+    def resolve(self, arg) -> None:
+        """
+        This doesn't need to return any data as it stores the data in the `Interpreter`
+        instance itself
+        """
         raise NotImplementedError(f"Unexpected type provided.")
 
     @resolve.register(list)
@@ -84,12 +120,21 @@ class Resolver(e.BaseVisitor, stmt.StmtVisitor):
         self._declare(func_stmt.name)
         self._define(func_stmt.name)
 
+        if func_stmt.name.lexeme == "init":
+            self._current_function = FunctionType.INITIALIZER
+
         self._resolve_function(func_stmt, FunctionType.FUNCTION)
 
     def visit_return_statement(self, return_stmt: stmt.Return):
         if self._current_function == FunctionType.NONE:
             parse_error(
                 return_stmt.keyword, "Cannot use return outside of functions or methods"
+            )
+        if (return_stmt.value is not None) and (
+            self._current_function == FunctionType.INITIALIZER
+        ):  # we still allow empty returns in initializers `return;`
+            parse_error(
+                return_stmt.keyword, "Cannot return a value from an initializer"
             )
         if return_stmt.value is not None:
             self.resolve(return_stmt.value)
@@ -111,6 +156,17 @@ class Resolver(e.BaseVisitor, stmt.StmtVisitor):
         return None
 
     def visit_variable_expr(self, var: e.Variable):
+        """
+        This is the main method that kindof uploads the resolved variable information to,
+        interpreter instance. It calls `resolve_local` which tells the interpreter the
+        variable and its distance from the current scope.
+        Ex: if it's current scope distance would be 0, 1 in the enclosing one and so on...
+
+        The interpreter then only looks at that distance from current scope or in the
+        global scope to find the value of the referenced variable.
+
+        Even function, method or classes are just variable that are callable.
+        """
         if len(self._scopes) != 0 and (self._scopes[-1].get(var.name.lexeme) is False):
             parse_error(
                 var.name, "Can't read the local variable in it's own initializer"
@@ -130,6 +186,10 @@ class Resolver(e.BaseVisitor, stmt.StmtVisitor):
             self.resolve(arg)
 
     def _resolve_local(self, expr: e.Expr, name: Token):
+        """
+        Tells the interpreter about the distance of the referenced var from the current
+        scope
+        """
         for idx, scope in enumerate(reversed(self._scopes)):
             if name.lexeme in scope.keys():
                 # we pass the number of scope between the current scope and the scope
@@ -153,3 +213,10 @@ class Resolver(e.BaseVisitor, stmt.StmtVisitor):
                 self._define(param)
             self.resolve(function.body)
         self._current_function = enclosing_func
+
+    def visit_this_expr(self, this_expr: e.This):
+        if self._current_class == ClassType.NONE:
+            parse_error(this_expr.keyword, "Cannot use 'this' outside of a class")
+            return
+
+        self._resolve_local(this_expr, this_expr.keyword)
