@@ -135,7 +135,7 @@ class Resolver(e.BaseVisitor, stmt.StmtVisitor):
                 # we pass the number of scope between the current scope and the scope
                 # in which the variable was found. If it were find in the current scope
                 # it's 0
-                self._interpreter.resolve(expr, len(self._scopes) - idx - 1)
+                self._interpreter.resolve(expr, idx)
                 return
 
     @contextmanager
