@@ -26,4 +26,7 @@ Python implementation of the book [crafting interpreters](http://craftinginterpr
 - [ ] Lambdas
 - [ ] Provide builtins to do web-requests
 - [ ] Add `setup.py` for direct install
+- [ ] **Add support for decorators**
+- [ ] Consider if we want decorators to return `this` implicitly
+- [ ] Add more builtins with decorators like `@property`, `@classmethod` etc.
 
