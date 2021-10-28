@@ -80,6 +80,7 @@ class Scanner:
             tt.AND,
             tt.OR,
             tt.NIL,
+            tt.THIS,
         ]
         while self._peek().isalnum() or self._peek() == "_":
             self._advance()

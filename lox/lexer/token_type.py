@@ -45,3 +45,4 @@ class TokenType(Enum):
     NIL = "nil"
 
     EOF = None
+    THIS = "this"
