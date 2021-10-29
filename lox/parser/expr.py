@@ -48,6 +48,10 @@ class BaseVisitor(ABC):
     def visit_this_expr(self, this_expr: "This"):
         pass
 
+    @abstractmethod
+    def visit_super_expr(self, super_expr: "Super"):
+        pass
+
 
 class Expr(ABC):
     """
@@ -170,3 +174,12 @@ class This(Expr):
 
     def __init__(self, keyword: Token):
         self.keyword = keyword
+
+
+class Super(Expr):
+    def __init__(self, keyword: Token, method: Token):
+        self.keyword = keyword
+        self.method = method
+
+    def accept(self, visitor: BaseVisitor) -> t.Any:
+        return visitor.visit_super_expr(self)

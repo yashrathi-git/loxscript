@@ -123,6 +123,9 @@ class Class(Stmt):
     def accept(self, visitor: StmtVisitor):
         visitor.visit_class_statement(self)
 
-    def __init__(self, name: Token, methods: t.List[Function]):
+    def __init__(
+        self, name: Token, methods: t.List[Function], superclass: t.Optional[e.Variable]
+    ):
         self.name = name
         self.methods = methods
+        self.superclass = superclass

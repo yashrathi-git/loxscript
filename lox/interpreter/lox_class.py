@@ -41,9 +41,15 @@ class Class(Callable):
             initializer.bind(instance).call(interpreter, arguments)
         return instance
 
-    def __init__(self, name: str, methods: t.Dict[str, Function]):
+    def __init__(
+        self,
+        name: str,
+        methods: t.Dict[str, Function],
+        superclass: t.Optional["Class"] = None,
+    ):
         self.name = name
         self._methods = methods
+        self.superclass = superclass
 
     def __str__(self):
         return self.name
@@ -51,4 +57,8 @@ class Class(Callable):
     def find_method(self, name: t.Union[str, Token]) -> t.Optional[Function]:
         if isinstance(name, Token):
             name: str = name.lexeme
-        return self._methods.get(name)
+        same_class_method = self._methods.get(name)
+        if same_class_method is not None:
+            return same_class_method
+        if self.superclass is not None:
+            return self.superclass.find_method(name)

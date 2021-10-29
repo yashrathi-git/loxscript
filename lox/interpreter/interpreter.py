@@ -1,4 +1,5 @@
 import operator
+from contextlib import contextmanager, ExitStack
 
 from .callable import Callable, Function
 from .environment import Environment
@@ -14,6 +15,22 @@ from .natives import Clock
 
 
 class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
+    def visit_super_expr(self, super_expr: e.Super):
+        # we have already handled invalid uses of `super` in the static analysis step
+        # so no need to check again
+        dist = self._locals.get(super_expr)
+        superclass: Class = self._environment.get_at(dist, "super")
+        # Since `this` is implicitly bound to the the scope above the `super` keyword
+        # `method` -> `this` -> `super` -> ...
+        object_ = self._environment.get_at(dist - 1, "this")
+        method = superclass.find_method(super_expr.method)
+        if method is None:
+            raise RuntimeException(
+                super_expr.keyword, f"Undefined method '{super_expr.method.lexeme}'"
+            )
+        # `this` keyword inside super class' method would point to the subclass' instance
+        return method.bind(object_)
+
     def visit_this_expr(self, this_expr: e.This):
         return self.look_up_variable(this_expr.keyword, this_expr)
 
@@ -34,15 +51,41 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
         raise RuntimeException(get_expr.name, "Only instances can have properties")
 
     def visit_class_statement(self, class_stmt: stmt.Class):
+        superclass = None
+        if class_stmt.superclass is not None:
+            superclass = self._evaluate(class_stmt.superclass)
+            if not isinstance(superclass, Class):
+                raise RuntimeException(
+                    class_stmt.superclass, "Superclass must be a class"
+                )
+
         self._environment.define(
             class_stmt.name.lexeme, None
         )  # This allows references to the class in its own methods
-        methods: t.Dict[str, Function] = {}
-        for method in class_stmt.methods:
-            function = Function(method, self._environment)
-            methods[method.name.lexeme] = function
-        klass = Class(class_stmt.name.lexeme, methods)
+        with ExitStack() as stack:
+            if superclass is not None:
+                stack.enter_context(self._handle_superclass(superclass))
+
+            methods: t.Dict[str, Function] = {}
+            for method in class_stmt.methods:
+                # methods share common enclosing environment that contains `super`
+                # while `this` is bound to the class instance, we `super`
+                # would always refer the the superclass
+                function = Function(method, closure=self._environment)
+                methods[method.name.lexeme] = function
+            klass = Class(class_stmt.name.lexeme, methods)
+
         self._environment.assign(class_stmt.name, klass)
+
+    @contextmanager
+    def _handle_superclass(self, superclass: Class):
+        # Basically `super` is in enclosing scope of methods
+        # methods -> closure containing `this` -> `super`
+        env_before = self._environment
+        self._environment = Environment(self._environment)
+        self._environment.define("super", superclass)
+        yield
+        self._environment = env_before
 
     def visit_return_statement(self, return_stmt: stmt.Return):
         value = None

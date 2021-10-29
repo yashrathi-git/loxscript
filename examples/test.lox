@@ -65,18 +65,54 @@
 // t.expr = 'TEST';
 // print t.expr;
 
-class Cake {
-  init() {
-    this.test_attr = 'xyz';
-    var adjective = "delicious";
-    print "The "  + " cake is " + adjective + "!";
-  }
-  test() {
-    print this.test_attr;
+// class Cake {
+//   init() {
+//     this.test_attr = 'xyz';
+//     var adjective = "delicious";
+//     print "The "  + " cake is " + adjective + "!";
+//   }
+//   test() {
+//     print this.test_attr;
+//   }
+// }
+//
+// var cake = Cake();
+// cake.flavor = "German chocolate";
+// print cake.init();
+// cake.test();
+
+// class Foo {
+//   bar() {}
+// }
+//
+// print Foo().bar(); // expect: nil
+//
+//
+// class Foo {
+//   method(a, b) {}
+// }
+//
+// // Foo().method(1); // expect runtime error: Expected 2 arguments but got 1.
+//
+//
+// class Foo {
+//   method() { }
+// }
+// var foo = Foo();https://www.youtube.com/watch?v=BwpeKaqaagQ
+// print foo.method; // expect: <fn method>
+// print foo; // expect: instance of Foo
+
+class Doughnut {
+  cook() {
+    print "Fry until golden brown.";
   }
 }
 
-var cake = Cake();
-cake.flavor = "German chocolate";
-print cake.init();
-cake.test();
+class BostonCream < Doughnut {
+  cook() {
+    super.cook();
+    print "Pipe full of custard and coat with chocolate.";
+  }
+}
+
+BostonCream().cook();

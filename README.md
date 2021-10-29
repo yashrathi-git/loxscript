@@ -20,7 +20,7 @@ Python implementation of the book [crafting interpreters](http://craftinginterpr
     ```
 
 ## TODO:
-- [ ] Complete classes and inheritance part
+- [x] Complete classes and inheritance part
 - [ ] Better errors(with arrow pointer where approximately it's in the line)
 - [ ] Lists and Dicts
 - [ ] Lambdas

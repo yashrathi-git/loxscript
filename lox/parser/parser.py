@@ -152,6 +152,11 @@ class Parser:
             return e.Variable(self._previous())
         if self._match(tt.THIS):
             return e.This(self._previous())
+        if self._match(tt.SUPER):
+            keyword = self._previous()
+            self._consume(tt.DOT, "Expect '.' after super")
+            method = self._consume(tt.IDENTIFIER, "Expected superclass method name")
+            return e.Super(keyword, method)
         raise self._error(self._peek(), "Expected expression.")
 
     def _consume(self, type_: tt, message: str):
@@ -395,6 +400,12 @@ class Parser:
 
     def _class_declaration(self):
         name = self._consume(tt.IDENTIFIER, "Expected class name")
+        superclass = None
+
+        if self._match(tt.LESS):
+            self._consume(tt.IDENTIFIER, "'<' must be followed by superclass name")
+            superclass = e.Variable(self._previous())
+
         self._consume(tt.LEFT_PAREN, "Expected '{' before class body")
 
         methods: t.List[stmt.Function] = []
@@ -404,4 +415,4 @@ class Parser:
 
         self._consume(tt.RIGHT_PAREN, "Expected '}' after class body")
 
-        return stmt.Class(name=name, methods=methods)
+        return stmt.Class(name=name, methods=methods, superclass=superclass)

@@ -1,4 +1,4 @@
-from contextlib import contextmanager
+from contextlib import contextmanager, ExitStack
 from enum import Enum, auto
 
 from .interpreter import Interpreter
@@ -19,10 +19,18 @@ class FunctionType(Enum):
 
 class ClassType(Enum):
     CLASS = auto()
+    SUBCLASS = auto()
     NONE = auto()
 
 
 class Resolver(e.BaseVisitor, stmt.StmtVisitor):
+    def visit_super_expr(self, super_expr: e.Super):
+        if self._current_class is ClassType.NONE:
+            parse_error(super_expr.keyword, "Cannot use 'super' outside a class.")
+        if not self._current_class == ClassType.SUBCLASS:
+            parse_error(super_expr.keyword, "Cannot use 'super' with no subclass.")
+        self._resolve_local(super_expr, super_expr.keyword)
+
     def visit_set_expr(self, set_expr: e.Set):
         # Value is the value of the variable
         self.resolve(set_expr.value)
@@ -38,13 +46,29 @@ class Resolver(e.BaseVisitor, stmt.StmtVisitor):
         self._current_class = ClassType.CLASS
         self._declare(class_stmt.name)
         self._define(class_stmt.name)
-        with self._new_scope():
+
+        if (class_stmt.superclass is not None) and (
+            class_stmt.name.lexeme == class_stmt.superclass.name.lexeme
+        ):
+            parse_error(class_stmt.name, "A class cannot inherit from itself.")
+
+        with ExitStack() as stack:
+            if class_stmt.superclass is not None:
+                self._current_class = ClassType.SUBCLASS
+                self.resolve(class_stmt.superclass)
+                # we start new scope after we have resolved the superclass
+                stack.enter_context(self._new_scope())
+                self._scopes[-1]["super"] = True
+
+            stack.enter_context(self._new_scope())
+
             # `this` is treated like a variable in the enclosing scope
             self._scopes[-1]["this"] = True
             for method in class_stmt.methods:
                 self._resolve_function(
                     method, FunctionType.METHOD
                 )  # this also start create a new scope just for the method
+
         self._current_class = enclosing_class
 
     def __init__(self, interpreter: Interpreter):
