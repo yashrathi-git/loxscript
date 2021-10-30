@@ -1,4 +1,4 @@
-from lox.lexer.token_type import TokenType
+from loxscript.lexer.token_type import TokenType
 import typing as t
 
 

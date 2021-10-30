@@ -1,8 +1,8 @@
 import typing as t
 
-from lox.errors import RuntimeException
-from lox.interpreter.callable import Callable, Function
-from lox.lexer.token import Token
+from loxscript.errors import RuntimeException
+from loxscript.interpreter.callable import Callable, Function
+from loxscript.lexer.token import Token
 
 
 class ClassInstance:

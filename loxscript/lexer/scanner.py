@@ -1,6 +1,6 @@
-from lox.handle_errors import error
-from lox.lexer.token import Token
-from lox.lexer.token_type import TokenType as tt
+from loxscript.handle_errors import error
+from loxscript.lexer.token import Token
+from loxscript.lexer.token_type import TokenType as tt
 import typing as t
 
 
