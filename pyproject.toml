@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "lox-interpreter"
+name = "loxscript"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Yash Rathi <yashrathicricket@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = ">=3.8,<4.0"
@@ -12,3 +12,6 @@ python = ">=3.8,<4.0"
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+loxscript = 'loxscript.__main__:main'
