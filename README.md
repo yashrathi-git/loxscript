@@ -8,7 +8,20 @@ with some of my own changes and additions.
 ## Requirements
 * python >= 3.8
 
-## Running the interpreter
+## Installation
+### Install with pip
+
+```sh
+$ pip install git+https://github.com/yashrathi-git/loxscript
+```
+Now you could run `loxscript` to access the interpreter.
+
+**Usage:**
+```sh
+$ loxscript                             # Starts a loxscript repl
+$ loxscript path/to/source_code.ls      # Executes the file
+```
+### Without pip
 1. Clone the repo
     ```sh
     $ git clone https://github.com/yashrathi-git/loxscript
@@ -29,7 +42,7 @@ with some of my own changes and additions.
 - [ ] Lists and Dicts
 - [ ] Lambdas
 - [ ] Provide builtins to do web-requests
-- [ ] Add `setup.py` for direct install
+- [x] Add `setup.py` for direct install
 - [ ] **Add support for decorators**
 - [ ] Consider if we want decorators to return `this` implicitly
 - [ ] Add more builtins with decorators like `@property`, `@classmethod` etc.
