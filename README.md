@@ -1,5 +1,9 @@
 # Loxscript
-Python implementation of the book [crafting interpreters](http://craftinginterpreters.com/). It's a tree-walk intereter.
+Python port of the book [crafting interpreters](http://craftinginterpreters.com/)
+with some of my own changes and additions.
+
+## Features and quick tutorial
+[You could find the tutorial here](https://github.com/yashrathi-git/loxscript/blob/main/snippets.md)
 
 ## Requirements
 * python >= 3.8
