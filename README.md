@@ -16,6 +16,8 @@ $ pip install git+https://github.com/yashrathi-git/loxscript
 ```
 Now you could run `loxscript` to access the interpreter.
 
+If you are doing user install, you must add the user-level `bin` directory to your `PATH` environment variable in order to use loxscript. If you are using a Unix derivative (FreeBSD, GNU / Linux, OS X), you can achieve this by using `export PATH="$HOME/.local/bin:$PATH"` command.
+
 **Usage:**
 ```sh
 $ loxscript                             # Starts a loxscript repl
