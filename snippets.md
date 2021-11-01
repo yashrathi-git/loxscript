@@ -1,9 +1,10 @@
 # Language Features
+These are just quick snippets to quickly go through all the main features. Loxscript works mostly similar to other languages.
 ## Printing
 ```python
 print "Hello World";
 ```
-Not that LoxScript requires
+Note that LoxScript requires explicit `;` to end the statement.
 ## Basic Data types
 ```js
 "this is a string";  // string
