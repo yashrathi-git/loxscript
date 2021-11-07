@@ -56,7 +56,7 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
             superclass = self._evaluate(class_stmt.superclass)
             if not isinstance(superclass, Class):
                 raise RuntimeException(
-                    class_stmt.superclass, "Superclass must be a class"
+                    class_stmt.superclass.name, "Superclass must be a class"
                 )
 
         self._environment.define(
@@ -73,7 +73,7 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
                 # would always refer the the superclass
                 function = Function(method, closure=self._environment)
                 methods[method.name.lexeme] = function
-            klass = Class(class_stmt.name.lexeme, methods)
+            klass = Class(class_stmt.name.lexeme, methods, superclass)
 
         self._environment.assign(class_stmt.name, klass)
 
@@ -207,7 +207,7 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
             return not self._is_truthy(right)
         if unary.operator.type == tt.MINUS:
             self._check_number_operands(unary.operator, right)
-            return float(-1 * int(right))
+            return float(-1 * float(right))
 
         # Unreachable
         return None
