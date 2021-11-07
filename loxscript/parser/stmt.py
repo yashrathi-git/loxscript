@@ -1,7 +1,8 @@
-from . import expr as e
-from abc import ABC, abstractmethod
-from ..lexer.token import Token
 import typing as t
+from abc import ABC, abstractmethod
+
+from ..lexer.token import Token
+from . import expr as e
 
 
 class StmtVisitor(ABC):

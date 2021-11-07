@@ -1,10 +1,9 @@
-from abc import ABC, abstractmethod
 import typing as t
+from abc import ABC, abstractmethod
 
-from .environment import Environment
 from ..errors import Return
-
 from ..parser import stmt
+from .environment import Environment
 
 
 class Callable(ABC):

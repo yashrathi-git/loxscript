@@ -1,10 +1,11 @@
-from . import expr as e
-from . import stmt
+import typing as t
+
+from ..errors import ParseError
 from ..handle_errors import parse_error
 from ..lexer.token import Token
-import typing as t
 from ..lexer.token_type import TokenType as tt
-from ..errors import ParseError
+from . import expr as e
+from . import stmt
 
 
 class Parser:

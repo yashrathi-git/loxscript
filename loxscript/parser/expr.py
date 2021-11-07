@@ -1,6 +1,7 @@
-from ..lexer.token import Token
 import typing as t
 from abc import ABC, abstractmethod
+
+from ..lexer.token import Token
 
 
 class BaseVisitor(ABC):

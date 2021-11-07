@@ -1,17 +1,17 @@
 import operator
-from contextlib import contextmanager, ExitStack
+import typing as t
+from contextlib import ExitStack, contextmanager
 
+from ..errors import Return, RuntimeException
+from ..handle_errors import runtime_error
+from ..lexer.token import Token
+from ..lexer.token_type import TokenType as tt
+from ..parser import expr as e
+from ..parser import stmt
 from .callable import Callable, Function
 from .environment import Environment
 from .lox_class import Class, ClassInstance
-from ..handle_errors import runtime_error
-from ..lexer.token import Token
-from ..parser import expr as e
-from ..lexer.token_type import TokenType as tt
-import typing as t
-from ..errors import RuntimeException, Return
-from ..parser import stmt
-from .natives import Clock, GetChar, Chr, Exit, PrintError
+from .natives import Chr, Clock, Exit, GetChar, PrintError
 
 
 class Interpreter(e.BaseVisitor, stmt.StmtVisitor):

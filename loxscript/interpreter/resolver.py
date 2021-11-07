@@ -1,13 +1,13 @@
-from contextlib import contextmanager, ExitStack
-from enum import Enum, auto
-
-from .interpreter import Interpreter
-from ..lexer.token import Token
-from ..parser import stmt as stmt  # to prevent shadowing stmt parameter
-from ..parser import expr as e
-from ..handle_errors import parse_error
-from functools import singledispatchmethod
 import typing as t
+from contextlib import ExitStack, contextmanager
+from enum import Enum, auto
+from functools import singledispatchmethod
+
+from ..handle_errors import parse_error
+from ..lexer.token import Token
+from ..parser import expr as e
+from ..parser import stmt as stmt  # to prevent shadowing stmt parameter
+from .interpreter import Interpreter
 
 
 class FunctionType(Enum):

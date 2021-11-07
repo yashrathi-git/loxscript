@@ -1,10 +1,11 @@
 import sys
-from pathlib import Path
 import typing as t
+from pathlib import Path
 
 from loxscript.interpreter.resolver import Resolver
 from loxscript.lexer.scanner import Scanner
 from loxscript.parser.parser import Parser
+
 from .handle_errors import has_any_error, update_error
 from .interpreter.interpreter import Interpreter
 

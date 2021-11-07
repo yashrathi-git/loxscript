@@ -1,6 +1,6 @@
-from .lexer.token_type import TokenType as tt
-from .lexer.token import Token
 from .errors import RuntimeException
+from .lexer.token import Token
+from .lexer.token_type import TokenType as tt
 
 _errors = {"_errors": False, "runtime_errors": False}
 

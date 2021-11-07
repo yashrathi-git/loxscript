@@ -1,7 +1,8 @@
-from .callable import Callable
-import typing as t
-import time
 import sys
+import time
+import typing as t
+
+from .callable import Callable
 
 
 class Clock(Callable):

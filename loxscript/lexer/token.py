@@ -1,5 +1,6 @@
-from loxscript.lexer.token_type import TokenType
 import typing as t
+
+from loxscript.lexer.token_type import TokenType
 
 
 class Token:
