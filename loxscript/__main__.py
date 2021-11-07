@@ -6,7 +6,7 @@ from loxscript.interpreter.resolver import Resolver
 from loxscript.lexer.scanner import Scanner
 from loxscript.parser.parser import Parser
 
-from .handle_errors import has_any_error, update_error
+from .handle_errors import has_any_error, update_error, has_error, has_runtime_error
 from .interpreter.interpreter import Interpreter
 
 
@@ -29,7 +29,7 @@ class App:
 
 def run_repl():
     run = App()
-    print("-------------Lox REPL--------------")
+    print("-------------LoxScript REPL--------------")
     print("Press `Ctrl+D` to exit")
     print(
         "If you want to use multi-line code-block({ }) \n"
@@ -58,8 +58,10 @@ def run_file(fp: str):
     run = App()
     run(source=code)
 
-    if has_any_error():
-        sys.exit(1)
+    if has_runtime_error():
+        sys.exit(70)
+    if has_error():
+        sys.exit(65)
 
 
 def main(

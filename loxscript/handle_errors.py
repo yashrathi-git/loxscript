@@ -1,3 +1,5 @@
+import sys
+
 from .errors import RuntimeException
 from .lexer.token import Token
 from .lexer.token_type import TokenType as tt
@@ -6,7 +8,7 @@ _errors = {"_errors": False, "runtime_errors": False}
 
 
 def report(line: int, where: str, message: str):
-    print(f"[line: {line}] Error {where} : {message}")
+    sys.stderr.write(f"[line {line}] Error{where}: {message}\n")
     _errors["_errors"] = True
 
 
@@ -21,13 +23,15 @@ def error(line: int, error_message: str):
 
 def parse_error(token: Token, message: str):
     if token.type == tt.EOF:
-        report(token.line, "at end", message)
+        report(token.line, " at end", message)
     else:
-        report(token.line, f"at {token.lexeme}", message)
+        report(token.line, f" at '{token.lexeme}'", message)
 
 
 def runtime_error(runtime_exception: RuntimeException):
-    print(str(runtime_exception) + f"\n[line: {runtime_exception.token.line}]")
+    sys.stderr.write(
+        str(runtime_exception) + f"\n[line {runtime_exception.token.line}]\n"
+    )
     _errors["runtime_errors"] = True
 
 

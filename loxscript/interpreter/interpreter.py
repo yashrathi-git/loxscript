@@ -199,7 +199,7 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
             return False
         if isinstance(val, bool):
             return val
-        return val
+        return True
 
     def visit_unary_method(self, unary: e.Unary):
         right = self._evaluate(unary.right)
@@ -240,7 +240,7 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
                 return left + right
             elif isinstance(left, str) and isinstance(right, str):
                 return left + right
-            raise RuntimeException(op, "Operand must be number or strings")
+            raise RuntimeException(op, "Operands must be two numbers or two strings.")
         if op.type == tt.EQUAL_EQUAL:
             return self._is_equal(left, right)
         if op.type == tt.BANG_EQUAL:
@@ -266,7 +266,11 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
     def _check_number_operands(operator_: Token, *operands: t.Any):
         if all(isinstance(o, float) for o in operands):
             return True
-        raise RuntimeException(operator_, "Operand must be a number")
+        if len(operands) == 1:
+            out_str = "Operand must be a number."
+        else:
+            out_str = "Operands must be numbers."
+        raise RuntimeException(operator_, out_str)
 
     @staticmethod
     def _is_equal(a, b):
