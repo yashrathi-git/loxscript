@@ -27,7 +27,7 @@ class Resolver(e.BaseVisitor, stmt.StmtVisitor):
     def visit_super_expr(self, super_expr: e.Super):
         if self._current_class is ClassType.NONE:
             parse_error(super_expr.keyword, "Cannot use 'super' outside a class.")
-        if not self._current_class == ClassType.SUBCLASS:
+        if self._current_class is ClassType.CLASS:
             parse_error(super_expr.keyword, "Cannot use 'super' with no subclass.")
         self._resolve_local(super_expr, super_expr.keyword)
 
