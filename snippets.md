@@ -1,5 +1,7 @@
 # Language Features
-These are just quick snippets to quickly go through all the main features. Loxscript works mostly similar to other languages.
+These are just quick snippets to quickly go through all the main features. 
+Loxscript works mostly similar to other OOP-based languages like python, java.
+
 ## Printing
 ```python
 print "Hello World";
@@ -62,6 +64,8 @@ print x; // error: Undefined variable x
 ```js
 if (a==b) {
     print "a is equal to b";
+} else if (a==c) {
+    print "a is equal to c";
 } else {
     print "a is not equal to b";
 }
