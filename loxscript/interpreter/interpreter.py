@@ -11,7 +11,7 @@ from ..lexer.token_type import TokenType as tt
 import typing as t
 from ..errors import RuntimeException, Return
 from ..parser import stmt
-from .natives import Clock
+from .natives import Clock, GetChar, Chr, Exit, PrintError
 
 
 class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
@@ -139,6 +139,10 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
         self.globals = Environment()
         self._environment = self.globals
         self.globals.define("clock", Clock())
+        self.globals.define("getc", GetChar())
+        self.globals.define("chr", Chr())
+        self.globals.define("print_error", PrintError())
+        self.globals.define("exit", Exit())
         # `locals` store the distance(where they were declared) of
         # the referenced variable from the
         # current scope(where they are being referenced)
