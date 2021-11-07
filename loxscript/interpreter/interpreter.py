@@ -207,7 +207,7 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
             return not self._is_truthy(right)
         if unary.operator.type == tt.MINUS:
             self._check_number_operands(unary.operator, right)
-            return ~int(right)
+            return float(-1 * int(right))
 
         # Unreachable
         return None
