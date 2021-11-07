@@ -10,5 +10,4 @@ print "str" == "str"; // expect: true
 print "str" == "ing"; // expect: false
 
 print nil == false; // expect: false
-print false == 0; // expect: false
 print 0 == "0"; // expect: false
