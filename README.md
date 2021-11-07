@@ -39,13 +39,13 @@ $ loxscript path/to/source_code.ls      # Executes the file
     ```
 
 ## TODO:
+- [ ] ADD TESTS!
+- [ ] Support for multiline comments
 - [x] Complete classes and inheritance part
-- [ ] Better errors(with arrow pointer where approximately it's in the line)
 - [ ] Lists and Dicts
 - [ ] Lambdas
 - [ ] Provide builtins to do web-requests
 - [x] Add `setup.py` for direct install
 - [ ] **Add support for decorators**
-- [ ] Consider if we want decorators to return `this` implicitly
 - [ ] Add more builtins with decorators like `@property`, `@classmethod` etc.
 
