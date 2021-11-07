@@ -54,7 +54,11 @@ def run_repl():
 
 
 def run_file(fp: str):
-    code = Path(fp).read_text()
+    try:
+        code = Path(fp).read_text()
+    except FileNotFoundError:
+        print(f"File '{fp}' doesn't exists.")
+        sys.exit(1)
     run = App()
     run(source=code)
 
