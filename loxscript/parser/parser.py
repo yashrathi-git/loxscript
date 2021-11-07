@@ -366,7 +366,7 @@ class Parser:
 
         condition: t.Optional[e.Expr] = None
 
-        if not self._match(tt.SEMICOLON):
+        if not self._check(tt.SEMICOLON):
             condition = self._expression()
         self._consume(tt.SEMICOLON, "Expected ';' after condition")
 
@@ -374,7 +374,7 @@ class Parser:
 
         if not self._check(tt.RIGHT_BRACE):
             increment = self._expression()
-        self._consume(tt.RIGHT_BRACE, "Expected ';' after for clauses.")
+        self._consume(tt.RIGHT_BRACE, "Expect ')' after for clauses.")
 
         body = self._statement()
         if increment is not None:
