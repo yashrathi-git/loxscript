@@ -203,6 +203,7 @@ class Resolver(e.BaseVisitor, stmt.StmtVisitor):
 
     def visit_logical(self, logical: e.Logical):
         self.resolve(logical.left)
+        self.resolve(logical.right)
 
     def visit_call_expr(self, call: e.Call):
         self.resolve(call.callee)
