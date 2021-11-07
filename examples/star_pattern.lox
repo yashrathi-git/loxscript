@@ -4,9 +4,9 @@ var n = 10;
     var lineno = 1;
     while (lineno <= n) {
         var char_no = 1;
-        var str_to_echo = '';
+        var str_to_echo = "";
         while (char_no <= lineno) {
-            str_to_echo = str_to_echo + '*';
+            str_to_echo = str_to_echo + "*";
             char_no = char_no + 1;
         }
         print str_to_echo;
