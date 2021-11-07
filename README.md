@@ -39,7 +39,7 @@ $ loxscript path/to/source_code.ls      # Executes the file
     ```
 
 ## TODO:
-- [ ] ADD TESTS!
+- [x] ADD TESTS!
 - [ ] Support for multiline comments
 - [x] Complete classes and inheritance part
 - [ ] Lists and Dicts
