@@ -28,15 +28,28 @@ class App:
 
 def run_repl():
     run = App()
+    print("-------------Lox REPL--------------")
+    print("Press `Ctrl+D` to exit")
+    print(
+        "If you want to use multi-line code-block({ }) \n"
+        "then use `{` at the end the line only "
+        "to continue the line.\n"
+        "Similarly use `}` at end of the line to exit the block.\n"
+    )
     while True:
         try:
             code = input("> ")
+            if code.endswith("{"):
+                while not code.endswith("}"):
+                    code += input("(block)>> ")
             run(code)
             update_error(False, False)
 
-        except (KeyboardInterrupt, EOFError):
+        except EOFError:
             print("\nExiting")
             break
+        except KeyboardInterrupt:
+            print("\nKeyboardInterrupt")
 
 
 def run_file(fp: str):
