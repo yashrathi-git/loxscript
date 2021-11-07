@@ -155,10 +155,9 @@ class Interpreter(e.BaseVisitor, stmt.StmtVisitor):
         value = self._evaluate(assignment.value)
         distance = self._locals.get(assignment)
         if distance is not None:
-            self._environment.assign_at(distance, assignment.name, value)
+            self._environment.assign_at(distance, assignment.name.lexeme, value)
         else:
             self.globals.assign(assignment.name, value)
-        self._environment.assign(name=assignment.name, value=value)
         return value
 
     def visit_var_statement(self, var_stmt: stmt.Var):
