@@ -50,7 +50,7 @@ def run_repl():
             print("\nExiting")
             break
         except KeyboardInterrupt:
-            print("\nKeyboardInterrupt")
+            print("\nKeyboardInterrupt is FOUND!!!!!!!YAYYY")
 
 
 def run_file(fp: str):
